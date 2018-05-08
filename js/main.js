@@ -13,7 +13,7 @@ let $url = location.pathname ;
 /***************************************************************************/
 
 const temperature_utilities = {
-//method to login and connect to API to return token
+//Method to login and connect to API to return token
 	login: (authetication , file) => {
     			if ((typeof authetication).toLowerCase() === 'object' && file ) { 
     	        let $formData = JSON.stringify(authetication);
@@ -28,7 +28,7 @@ const temperature_utilities = {
     				console.log("Please provide the login details as JSON object and file name");
     			}
     	},
-//method to request  temperature reading
+//Method to request  temperature reading
 	callTemApi : (data , file) => {
     					let $callTemAPiUrl = `${$url}${file}`;
     					let $getPara = data ; 
@@ -40,8 +40,7 @@ const temperature_utilities = {
                 });
               } else {
                   console.log("Please provide token and file name");
-              }
-    					
+              }		
   				},
 
 };
