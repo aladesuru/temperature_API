@@ -79,7 +79,7 @@ fieldset {
  */
 
 textarea {
-    resize: vertical;
+  resize: vertical;
 }
 
 /* ==========================================================================
@@ -87,20 +87,84 @@ textarea {
    ========================================================================== */
 
 .browserupgrade {
-    margin: 0.2em 0;
-    background: #ccc;
-    color: #000;
-    padding: 0.2em 0;
+  margin: 0.2em 0;
+  background: #ccc;
+  color: #000;
+  padding: 0.2em 0;
 }
 
 /* ==========================================================================
-   Author's custom styles
+   base style
    ========================================================================== */
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.container
+{
+  background-color: #ffc527;
+  border-radius: 10px;
+}
+
+.container h1
+{
+  text-align: center;
+  background-color: rgba(0,0,0,.7);
+  color: #f5f5f5;
+  margin: 0;
+}
+
+#login
+{
+ /* background-color: #e8b939;*/
+  border-radius: 10px;
+  margin: 0px 10px;
+  padding: 0 1%;
+  width: 100%;
+}
+
+#login input,
+#login label
+{
+  margin: 5px 10px;
+  padding: 10px 1%;
+  display: inline-block;
+  vertical-align: top;
+  width: 45%;
+  outline: 1px solid red;
+}
+
+#login label
+{
+  background-color: #dda305;
+  padding: 10px 1%;
+  color: #333;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+#login input
+{
+  outline: none;
+  border: 1px solid #e8b939;
+}
 
 
+@media all and (min-width: 769px)
+{
+  .container
+  {
+    width: 50%;
+    margin: 0px auto;
+  }
 
-
-
+  /*#login label
+  {
+    width: 40%;
+  }*/
+}
 
 
 
