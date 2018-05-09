@@ -1,7 +1,9 @@
-// Assuming form  validation is done and the fields values are  extracted to create object 
-let $token = null;
+// Variable declaration 
 let $url = location.pathname;
-let timeTemp = [];
+let $tempReading = [];
+let $time = null;
+let $averge = [];
+let $clearAverageInerval = null;
 
 /***************************************************************************/
 /*  Create a Temperature Utilities :
@@ -11,34 +13,53 @@ let timeTemp = [];
 /***************************************************************************/
 
 const temperature_utilities = {
-
+//Method to sniff if a user has  sign in 
  init: () => {
-   if (window.sessionStorage.getItem("token")) {
-     $("#temperature").fadeIn(800);  
-     temperature_utilities.callTemApi();
-     //calling the API every minute to take the latest temperature reading
-       setInterval(function() {
+   if (window.sessionStorage.getItem("token")) {  
+      temperature_utilities.callTemApi();
+       setInterval(() => {
+    //calling the API every minute to take the latest temperature reading
          temperature_utilities.callTemApi();
-       },60000);    
+
+    //generate timestamp , store the timestamp and the API generated every minute
+          $tempReading.push({timestamp : Date.now() , temp: Number(sessionStorage.temperature)});
+          // console.log($tempReading); 
+       },60000); 
+
+    //generate average to produce a smaler set of data that can serve across our API
+      $clearAverageInterval= setInterval(() => {
+        temperature_utilities.averageTemp($tempReading);
+       }, 300000);
    } else {
      $("#loginForm").fadeIn(800);
    }
  },
+
 //Method to login and connect to API to return token
     login: () => {
-         let $loginUrl = `${$url}${'token.json'}`;
+       let $loginUrl = `${$url}${'token.json'}`;
        let $loginDetails = {"user" : $('#user').val(), "password" : $('#password').val() } ;
        let $formData  = JSON.stringify($loginDetails) ;    
-       $.post($loginUrl , $formData , function(response){          
-             if (response.token) {
+        $.ajax({
+           url: $loginUrl,
+           type: 'POST',
+           data: $formData ,
+           contentType: 'application/Json',
+           processData: false,
+           dataType: 'json',
+           success: function (response) {
+            if (response.token) {
                window.sessionStorage.setItem("token", response.token);
                location.reload();
              } else {
                alert('Invalid Login')
              }
-           }).fail(function(jqXHR){
-             console.log(jqXHR.statusText);
-           });                                      
+           },
+           error: function(error){
+             console.info(error);
+           }
+       });         
+
        },
 
 //Method to request  temperature reading
@@ -46,15 +67,14 @@ const temperature_utilities = {
      let $callTemAPiUrl = `${$url}${'temp.json'}`;
    $.ajax({
        url: $callTemAPiUrl,
-       type: 'get',
-       data: {                
-       },
+       type: 'GET',
        headers: {
-           token: window.sessionStorage.getItem("token"),   //request containing bearer token  
+           token: window.sessionStorage.getItem("token"),   //with the request containing the bearer token  
        },
        dataType: 'json',
        success: function (data) {
-         console.info(data);
+         console.info(data); 
+         window.sessionStorage.setItem("temperature", data.temp);
        },
        error: function(error){
          console.info(error);
@@ -62,28 +82,38 @@ const temperature_utilities = {
    });                       
 },
 
- averageTempInTimeSeries: (timeSeries=[{}], invterval_duration=5) => {        
-   var totalTemp = 0;
-   for (var i = 0; i < timeSeries.length; i++) {
-       totalTemp += timeSeries[i].some_temp << 0;
+//Method that calculate the average temperature and 
+// store the result has an object
+ averageTemp: (datalist) => {        
+   let totalTimestamp = 0;
+   let totalTemperature = 0;
+   for (i = 0; i < datalist.length; i++) {
+       totalTimestamp += datalist[i].timestamp ;
+       totalTemperature += datalist[i].temp ;
    }
-   averageTemp =  totalTemp/timeSeries.length;
-   return {timestamp: Date.now(), some_temp: averageTemp}
+   averageTemp =  totalTemperature / datalist.length;
+   averageTimestamp =  totalTimestamp / datalist.length;
+
+   $averge.push({timestamp: averageTimestamp , temp: averageTemp});
+
+   // console.log({timestamp: averageTimestamp , temp: averageTemp});
+   console.log($averge);
  },
 
- // randomTemp: () => {
- //   let max_temp = 50
- //   let min_temp = -50
- //   return Math.floor(Math.random() * (100 - (max_temp) + 1)) + (min_temp)
- // }
-};
+//Method that allow calling code to specify any length of input time
+// and any interval duration, but have default of 24hour.
+  timeSeries: (setlengthoftime = 24 , setInterval= 5) => { 
+
+  }
+
+}
 
 // temperature_utilities.login();
 temperature_utilities.init();
-
 $('form#login').submit(function(event){
      event.preventDefault();
      temperature_utilities.login();
+     $("#loginForm").fadeOut();
    });
 
 //calling the API every minute to take the latest temperature reading
