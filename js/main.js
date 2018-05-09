@@ -27,9 +27,10 @@ const temperature_utilities = {
        },60000); 
 
     //generate average to produce a smaler set of data that can serve across our API
-      $clearAverageInterval= setInterval(() => {
-        temperature_utilities.averageTemp($tempReading);
-       }, 300000);
+      // $clearAverageInterval= setInterval(() => {
+      //   temperature_utilities.averageTemp($tempReading);
+      //  }, 300000);
+      temperature_utilities.timeSeries(1,5);
    } else {
      $("#loginForm").fadeIn(800);
    }
@@ -102,8 +103,19 @@ const temperature_utilities = {
 
 //Method that allow calling code to specify any length of input time
 // and any interval duration, but have default of 24hour.
-  timeSeries: (setlengthoftime = 24 , setInterval= 5) => { 
+  timeSeries: (tempReadingLenghtofTime = 24 , tempReadingInterval= 5) => { 
+    let interval = tempReadingInterval * (1000 * 60);
+    let timeSeries = tempReadingLenghtofTime * (1000 * 60 * 60); 
 
+      $clearAverageInerval = setInterval(() => {
+        temperature_utilities.averageTemp($tempReading);
+      }, interval);
+
+      setTimeout(() => {
+        sessionStorage.removeItem("token");
+        clearInterval($clearAverageInerval);
+        location.reload(true);
+      },timeSeries);
   }
 
 }
@@ -115,8 +127,3 @@ $('form#login').submit(function(event){
      temperature_utilities.login();
      $("#loginForm").fadeOut();
    });
-
-//calling the API every minute to take the latest temperature reading
-// const latestApi = () =>
-
-//calling the API every minute to take the latest temperature reading
