@@ -1,8 +1,7 @@
 // Global Variable declaration 
 let $url = location.pathname;
-let $tempReading = []; 
-let $time = null;
-let $averge = [];
+let $tempReading = []; // Array that store temperature every  minute
+let $averge = [];      // Array that store average temperature every interval call
 let $clearAverageInerval = null;
 
 /***************************************************************************/
@@ -15,49 +14,48 @@ let $clearAverageInerval = null;
 /*  5 that allow any length of time series and any interval
 /*  6 that display temperature to browser                                        
 /***************************************************************************/
-
 const temperature_utilities = {
+
 //Method to check if a user has signed in 
  init: () => {
-	 if (window.sessionStorage.getItem("token")) {  // if signed in display display temperature
-			 temperature_utilities.callTemApi('temp.json');    
+	 if (window.sessionStorage.getItem("token")) {     //if signed in run the below methods
+			 temperature_utilities.callTemApi('temp.json');   
 
-			 setInterval(() => {
-			  temperature_utilities.callTemApi('temp.json');    //calling the API every minute to take the latest temperature reading
+			 setInterval(() => {                             //calling the API every minute to take the latest temperature reading
+			  temperature_utilities.callTemApi('temp.json');    
 			 },60000); 
 
 			temperature_utilities.smallerDataSet(1,5);  //generate average to produce a smaller set of data that can serve across our API 
 	 } else {
-		 $('#Form-container').css('transform' , 'scale(1)');  // if not signed in display login form
+		 $('#Form-container').css('transform' , 'scale(1)');  //if not signed in display login form
 	 }
  },
 
 //Method to login and connect to API to return token
-		login: () => {
-			 let $loginUrl = `${$url}${file}`;
-			 let $loginDetails = {"user" : $('#user').val(), "password" : $('#password').val() } ;
-			 let $formData  = JSON.stringify($loginDetails) ;   // Convert loging details to JSON 
-				$.ajax({
-					 url: $loginUrl,
-					 type: 'POST',
-					 data: $formData ,
-					 contentType: 'application/Json',
-					 processData: false,
-					 dataType: 'json',
-					 success: function (response) {
-						if (response.token) {
-							 window.sessionStorage.setItem("token", response.token);
-							 location.reload();    
-						 } else {
-							 alert('Invalid Login')
-						 }
-					 },
-					 error: function(error){
-						 console.info(error);
-					 }
-			 });         
-
-		},
+	login: (file) => {
+	 let $loginUrl = `${$url}${file}`;
+	 let $loginDetails = {"user" : $('#user').val(), "password" : $('#password').val() } ;
+	 let $formData  = JSON.stringify($loginDetails) ;   //Convert loging details to JSON and send with request
+		$.ajax({
+		 url: $loginUrl,
+		 type: 'POST',
+		 data: $formData ,
+		 contentType: 'application/Json',
+		 processData: false,
+		 dataType: 'json',
+		 success: function (response) {
+			if (response.token) {
+				 window.sessionStorage.setItem("token", response.token);
+				 temperature_utilities.init();
+			 } else {
+				 alert('Invalid Login')
+			 }
+		 },
+		 error: function(error){
+			 console.info(error);
+		 }
+	 });         
+},
 
 //Method to request  temperature reading
 	callTemApi : (file) => {
@@ -66,16 +64,16 @@ const temperature_utilities = {
   	 url: $callTemAPiUrl,
   	 type: 'GET',
   	 headers: {
-  			 token: window.sessionStorage.getItem("token"),   //request containing the bearer token    
+  			 token: window.sessionStorage.getItem("token"),   //Request containing the bearer token    
   	 },
   	 dataType: 'json',
   	 success: function (data) {
   		 console.info(data); 
-  		 window.sessionStorage.setItem("temperature", data.temp);  //store the temperature on client side
+  		 window.sessionStorage.setItem("temperature", data.temp);  //Store the temperature on client side
        temperature_utilities.showTempOnbrowswer();               // Display temperature to browser
 
        /* generate timestamp , store the timestamp and the API 
-       /* to be used to calculate Average. */
+       * to be used to calculate Average. */
         $tempReading.push({timestamp : Date.now() , temp: Number(sessionStorage.temperature)});
   	 },
   	 error: function(error){
@@ -84,8 +82,8 @@ const temperature_utilities = {
   }); 
 },                      
 
-//Method that allow calling code to specify any length of input time
-// and any interval duration, but have default of 24hours and 5 interval.
+/* Method that calculate the average temperature and 
+* store the result has an object */
  averageTemp: (datalist) => {        
 	 let totalTimestamp = 0;
 	 let totalTemperature = 0;
@@ -97,14 +95,15 @@ const temperature_utilities = {
 	 averageTimestamp =  totalTimestamp / datalist.length;
 
 	 $averge.push({timestamp: averageTimestamp , temp: averageTemp});
-   
+
 	 console.log($averge);
  },
 
-//Method that allow calling code to specify any length of input time
-// and any interval duration, but have default of 24 and 5 respectively .
+/* Method that allow calling code to specify any length of input time
+* and any interval duration, but if the calling code did not specify
+* use default of 24 and 5 respectively. */
   smallerDataSet: (tempReadingLenghtofTime = 24 , tempReadingInterval= 5) => { 
-    let interval = tempReadingInterval * (1000 * 60);             // convert the interval to millisecond
+    let interval = tempReadingInterval * (1000 * 60);              // convert the interval to millisecond
     let lenghtofTime = tempReadingLenghtofTime * (1000 * 60 * 60); // convert the length of time to millisecond
 
       $clearAverageInerval = setInterval(() => {  
@@ -123,10 +122,9 @@ const temperature_utilities = {
     let  $displayReading = `<div class='temp'><h2>London Office Temperature</h2>
                             <span>${sessionStorage.temperature}<sup>o</sup></span></div>`;
     $('.container').html($displayReading);
-    },
+  },
 }
 
-// temperature_utilities.login();
 temperature_utilities.init();
 $('form#login').submit(function(event){
      event.preventDefault();
