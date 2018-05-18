@@ -15,7 +15,6 @@ let $clearAverageInerval = null;
 /*  6 that display temperature to browser                                        
 /***************************************************************************/
 const temperature_utilities = {
-
 //Method to check if a user has signed in 
  init: () => {
 	 if (window.sessionStorage.getItem("token")) {     //if signed in run the below methods
@@ -36,6 +35,7 @@ const temperature_utilities = {
 	 let $loginUrl = `${$url}${file}`;
 	 let $loginDetails = {"user" : $('#user').val(), "password" : $('#password').val() } ;
 	 let $formData  = JSON.stringify($loginDetails) ;   //Convert loging details to JSON and send with request
+   console.log($formData);
 		$.ajax({
 		 url: $loginUrl,
 		 type: 'POST',
@@ -126,6 +126,7 @@ const temperature_utilities = {
 }
 
 temperature_utilities.init();
+
 $('form#login').submit(function(event){
      event.preventDefault();
      temperature_utilities.login('token.json');
